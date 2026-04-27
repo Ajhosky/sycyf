@@ -140,6 +140,7 @@ Jeśli wyniki są słabe, zwiększaj stopniowo:
 
 Po każdej zmianie uruchom ponownie test i porównaj T4/T5/T7/T8 przy tym samym `EXPERIMENT_SEED`.
 
+
 ## Struktura plików
 
 - `config.py` — stałe projektu i etykiety klas,
