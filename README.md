@@ -53,12 +53,28 @@ Wszystkie testy są wykonywane przez `main.py` i drukowane w konsoli.
 
 Program automatycznie czyta plik `.env` (jeśli istnieje), więc nie trzeba wpisywać parametrów ręcznie w `main.py`.
 
-Najważniejsze pola:
 
-- `TRAIN_SAMPLES_PER_CLASS`, `TRAIN_EPOCHS`, `MLP_HIDDEN_DIM`, `MLP_LEARNING_RATE`,
-- `TRAIN_FLIP_PROBABILITY`, `TRAIN_MAX_SHIFT`,
-- `EVAL_SAMPLES_PER_CLASS`, `EVAL_SEQUENCE_COUNT`,
-- `FRACTIONAL_BITS`.
+### Opis zmiennych `.env`
+
+| Zmienna | Domyślnie | Co robi | Kiedy zwiększyć / zmniejszyć |
+|---|---:|---|---|
+| `EXPERIMENT_SEED` | `17` | Kontroluje losowość (inicjalizacja wag i generacja danych). | Ustaw stałą wartość do porównań; zmień seed, aby sprawdzić stabilność. |
+| `TRAIN_SAMPLES_PER_CLASS` | `2000` | Liczba próbek treningowych na klasę. | Zwiększ, gdy T4/T5 są słabe; zmniejsz do szybkich testów. |
+| `TRAIN_FLIP_PROBABILITY` | `0.05` | Szum bitowy w danych treningowych. | Zwiększ, aby uczyć odporności; za duża wartość może pogorszyć T1/T2. |
+| `TRAIN_MAX_SHIFT` | `1` | Maksymalne przesunięcie wzorca w treningu. | Zwiększ, jeśli realne dane mają większe przesunięcia. |
+| `TRAIN_EPOCHS` | `1000` | Liczba epok głównego treningu. | Zwiększ, jeśli model niedouczony; zmniejsz przy szybkim debugu. |
+| `MLP_HIDDEN_DIM` | `12` | Rozmiar warstwy ukrytej MLP. | Lekko zwiększ (np. 16), gdy model za słaby; zbyt duże zwiększa ryzyko przeuczenia. |
+| `MLP_LEARNING_RATE` | `0.08` | Krok uczenia. | Zmniejsz, gdy uczenie niestabilne; zwiększ ostrożnie, gdy uczenie jest zbyt wolne. |
+| `VERBOSE_TRAINING` | `true` | Logowanie postępu epok. | Ustaw `false`, aby skrócić/uprościć logi. |
+| `EXTRA_TRAINING_ROUNDS` | `0` | Ile dodatkowych rund hardeningu wykonać. | Zwiększ, gdy chcesz poprawić T4/T5/T7/T8. |
+| `EXTRA_SAMPLES_PER_CLASS` | `1000` | Próbki/klasę w każdej rundzie hardeningu. | Zwiększ przy słabej odporności na szum. |
+| `EXTRA_FLIP_PROBABILITY` | `0.12` | Szum danych w hardeningu. | Zwiększ, jeśli testy z dużym szumem są słabe. |
+| `EXTRA_MAX_SHIFT` | `1` | Przesunięcie wzorców w hardeningu. | Zwiększ, gdy spodziewasz się większych przesunięć w praktyce. |
+| `EXTRA_EPOCHS_PER_ROUND` | `250` | Epoki na każdą rundę hardeningu. | Zwiększ, gdy każda runda daje za mały efekt. |
+| `EVAL_SAMPLES_PER_CLASS` | `250` | Rozmiar testów ramkowych T3-T5. | Zwiększ dla bardziej wiarygodnego pomiaru. |
+| `EVAL_SEQUENCE_COUNT` | `500` | Liczba sekwencji w T6-T8. | Zwiększ dla stabilniejszego `voting accuracy`. |
+| `FRACTIONAL_BITS` | `8` | Precyzja fixed-point przy eksporcie modelu. | Dostosuj do wymagań implementacji HDL. |
+
 
 Przykład:
 
@@ -66,7 +82,7 @@ Przykład:
 TRAIN_SAMPLES_PER_CLASS=3000
 TRAIN_EPOCHS=1500
 MLP_LEARNING_RATE=0.06
-```
+EXTRA_TRAINING_ROUNDS=2
 
 ## Jak „bardziej przetrenować” model
 
@@ -139,7 +155,6 @@ Jeśli wyniki są słabe, zwiększaj stopniowo:
 4. ewentualnie lekko `MLP_HIDDEN_DIM` (np. 12 -> 16).
 
 Po każdej zmianie uruchom ponownie test i porównaj T4/T5/T7/T8 przy tym samym `EXPERIMENT_SEED`.
-
 
 ## Struktura plików
 
