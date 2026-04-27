@@ -83,6 +83,64 @@ EXTRA_EPOCHS_PER_ROUND=300
 
 To zwykle poprawia odporność na zakłócenia (T4/T5/T7/T8), kosztem dłuższego treningu.
 
+
+## Jak czytać wyniki z konsoli (interpretacja)
+
+Po treningu `main.py` wypisuje metryki dla kilku scenariuszy:
+
+- `T1: clean base signs` — dokładność na idealnych wzorcach 8x8 (bez szumu).
+- `T2: shifted clean signs` — dokładność po przesunięciach o `TRAIN_MAX_SHIFT`.
+- `T3-T5` — dokładność ramek przy coraz większym szumie (`flip_probability = 0.05, 0.10, 0.15`).
+- `T6-T8` — jak wyżej, ale dla sekwencji i końcowej decyzji po majority voting.
+- `Confusion matrix for T4` — szczegółowo pokazuje, które klasy model myli najczęściej.
+
+### Co znaczą liczby
+
+- `frame accuracy` = procent pojedynczych ramek sklasyfikowanych poprawnie.
+- `voting accuracy` = procent poprawnych decyzji końcowych dla całych sekwencji (`SEQUENCE_LENGTH=6`).
+- W macierzy pomyłek: **wiersz** to klasa prawdziwa, **kolumna** to klasa przewidziana.
+  - Im większe wartości na przekątnej, tym lepiej.
+  - Duże wartości poza przekątną oznaczają konkretne pomyłki (np. LEFT mylony z RIGHT).
+
+### Od czego te wyniki zależą
+
+Najmocniej od:
+
+- jakości i wielkości treningu: `TRAIN_SAMPLES_PER_CLASS`, `TRAIN_EPOCHS`, `MLP_HIDDEN_DIM`, `MLP_LEARNING_RATE`,
+- trudności danych: `TRAIN_FLIP_PROBABILITY`, `TRAIN_MAX_SHIFT`,
+- dodatkowego dogrywania na trudnych danych: `EXTRA_*`,
+- losowości: `EXPERIMENT_SEED` (zmienia inicjalizację i wygenerowane próbki),
+- poziomu testu: T3/T6 są łatwiejsze niż T5/T8.
+
+### Kiedy jest "dobrze", a kiedy "źle" (praktyczne progi)
+
+To są progi orientacyjne (dla tego projektu i syntetycznych danych):
+
+- **Bardzo dobrze**:
+  - T1/T2 blisko `100%`,
+  - T4 `>= 85%`,
+  - T5 `>= 75%`,
+  - T7 voting `>= 95%`, T8 voting `>= 90%`.
+- **Akceptowalnie**:
+  - T4 `75-85%`,
+  - T5 `65-75%`,
+  - T8 voting `80-90%`.
+- **Słabo / do poprawy**:
+  - T2 < `95%` (za słaba odporność na przesunięcia),
+  - T4 < `75%` lub T5 < `65%`,
+  - T8 voting < `80%`,
+  - silne skupienie pomyłek jednej klasy w confusion matrix.
+
+Jeśli wyniki są słabe, zwiększaj stopniowo:
+
+1. `TRAIN_SAMPLES_PER_CLASS` (np. 2000 -> 4000),
+2. `TRAIN_EPOCHS` (np. 1000 -> 1500),
+3. `EXTRA_TRAINING_ROUNDS` i `EXTRA_SAMPLES_PER_CLASS`,
+4. ewentualnie lekko `MLP_HIDDEN_DIM` (np. 12 -> 16).
+
+Po każdej zmianie uruchom ponownie test i porównaj T4/T5/T7/T8 przy tym samym `EXPERIMENT_SEED`.
+
+
 ## Struktura plików
 
 - `config.py` — stałe projektu i etykiety klas,
