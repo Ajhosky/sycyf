@@ -53,6 +53,7 @@ Wszystkie testy są wykonywane przez `main.py` i drukowane w konsoli.
 
 Program automatycznie czyta plik `.env` (jeśli istnieje), więc nie trzeba wpisywać parametrów ręcznie w `main.py`.
 
+
 ### Opis zmiennych `.env`
 
 | Zmienna | Domyślnie | Co robi | Kiedy zwiększyć / zmniejszyć |
@@ -74,6 +75,7 @@ Program automatycznie czyta plik `.env` (jeśli istnieje), więc nie trzeba wpis
 | `EVAL_SEQUENCE_COUNT` | `500` | Liczba sekwencji w T6-T8. | Zwiększ dla stabilniejszego `voting accuracy`. |
 | `FRACTIONAL_BITS` | `8` | Precyzja fixed-point przy eksporcie modelu. | Dostosuj do wymagań implementacji HDL. |
 
+
 Przykład:
 
 ```env
@@ -81,7 +83,6 @@ TRAIN_SAMPLES_PER_CLASS=3000
 TRAIN_EPOCHS=1500
 MLP_LEARNING_RATE=0.06
 EXTRA_TRAINING_ROUNDS=2
-```
 
 ## Jak „bardziej przetrenować” model
 
